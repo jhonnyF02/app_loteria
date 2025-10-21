@@ -1,2 +1,2 @@
-# app_loteria
+app_loteria.py
 app loteria
