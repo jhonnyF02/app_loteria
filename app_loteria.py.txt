@@ -1,0 +1,58 @@
+import streamlit as st
+import pandas as pd
+import random
+
+st.set_page_config(page_title="Simulador de Apostas", layout="centered")
+
+st.title("🎯 Simulador Inteligente de Apostas – Lotofácil e Mega-Sena")
+
+# Entrada de orçamento
+orcamento = st.slider("💸 Qual seu orçamento mensal para apostas?", 10, 100, 50)
+
+# Valor acumulado da Mega-Sena
+premio_mega = st.number_input("🏆 Valor acumulado da Mega-Sena (R$)", min_value=0.0, value=0.0)
+
+# Botão para gerar apostas
+if st.button("🎲 Gerar plano de apostas"):
+    jogos_lotofacil = []
+    jogos_megasena = []
+
+    # Lotofácil: R$ 3 por jogo
+    qtd_lotofacil = orcamento // 3
+    for _ in range(int(qtd_lotofacil)):
+        jogo = sorted(random.sample(range(1, 26), 15))
+        jogos_lotofacil.append(jogo)
+
+    # Mega-Sena: R$ 5 por jogo (se prêmio ≥ 5 milhões)
+    if premio_mega >= 5_000_000:
+        qtd_megasena = (orcamento % 3) // 5
+        for _ in range(int(qtd_megasena)):
+            jogo = sorted(random.sample(range(1, 61), 6))
+            jogos_megasena.append(jogo)
+
+    st.subheader("📋 Apostas Lotofácil")
+    for i, jogo in enumerate(jogos_lotofacil, 1):
+        st.write(f"Jogo {i}: {jogo}")
+
+    if jogos_megasena:
+        st.subheader("📋 Apostas Mega-Sena")
+        for i, jogo in enumerate(jogos_megasena, 1):
+            st.write(f"Jogo {i}: {jogo}")
+
+    # Simulação simples de retorno
+    retorno = round(random.uniform(0.3, 1.5) * orcamento, 2)
+    st.subheader("📊 Simulação de retorno médio")
+    st.write(f"Retorno estimado: R$ {retorno}")
+
+    # Exportação
+    df_loto = pd.DataFrame(jogos_lotofacil)
+    df_mega = pd.DataFrame(jogos_megasena)
+    df_loto.to_csv("apostas_lotofacil.csv", index=False)
+    df_mega.to_csv("apostas_megasena.csv", index=False)
+
+    with open("apostas_lotofacil.csv", "rb") as f:
+        st.download_button("📥 Baixar Lotofácil (.csv)", f, file_name="apostas_lotofacil.csv")
+
+    if jogos_megasena:
+        with open("apostas_megasena.csv", "rb") as f:
+            st.download_button("📥 Baixar Mega-Sena (.csv)", f, file_name="apostas_megasena.csv")
